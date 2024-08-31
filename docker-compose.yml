@@ -1,0 +1,28 @@
+services:
+  smartshopapi:
+    build:
+      context: ./SmartShopAPI/SmartShopAPI
+      dockerfile: Dockerfile
+    ports:
+      - "5888:80"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Production
+      - ConnectionStrings__SmartShopDbConnection=Server=sqlserver;Database=SmartShopDB;User=sa;Password=YourStrong!Passw0rd;TrustServerCertificate=True;
+    depends_on:
+      - sqlserver
+
+  smartshopui:
+    build:
+      context: ./SmartShopUI/SmartShopUI
+      dockerfile: Dockerfile
+    ports:
+      - "4288:80"
+
+  sqlserver:
+    image: mcr.microsoft.com/mssql/server:2019-latest
+    container_name: sqlserver
+    environment:
+      - ACCEPT_EULA=Y
+      - SA_PASSWORD=YourStrong!Passw0rd
+    ports:
+      - "1433:1433"

@@ -1,0 +1,43 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.0.31903.59
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "SmartShopUI", "SmartShopUI", "{C2575602-1C2B-42BB-8235-39E35FD44E4F}"
+EndProject
+Project("{54a90642-561a-4bb1-a94e-469adee60c69}") = "SmartShopUI", "SmartShopUI\SmartShopUI\SmartShopUI.esproj", "{AFF499B4-5EE2-4625-A78A-C4EED58FF457}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "SmartShopAPI", "SmartShopAPI", "{F4405F34-C72F-47F3-9FE8-8CA05E771984}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SmartShopAPI", "SmartShopAPI\SmartShopAPI\SmartShopAPI.csproj", "{5F1582FA-A969-4562-A8FA-4A05950D23DF}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SmartShopAPI.Tests", "SmartShopAPI\SmartShopAPI.Tests\SmartShopAPI.Tests.csproj", "{6FD68FC4-E4A8-4170-8857-8936205D76DC}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{AFF499B4-5EE2-4625-A78A-C4EED58FF457}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{AFF499B4-5EE2-4625-A78A-C4EED58FF457}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{AFF499B4-5EE2-4625-A78A-C4EED58FF457}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{AFF499B4-5EE2-4625-A78A-C4EED58FF457}.Release|Any CPU.Build.0 = Release|Any CPU
+		{5F1582FA-A969-4562-A8FA-4A05950D23DF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{5F1582FA-A969-4562-A8FA-4A05950D23DF}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{5F1582FA-A969-4562-A8FA-4A05950D23DF}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{5F1582FA-A969-4562-A8FA-4A05950D23DF}.Release|Any CPU.Build.0 = Release|Any CPU
+		{6FD68FC4-E4A8-4170-8857-8936205D76DC}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{6FD68FC4-E4A8-4170-8857-8936205D76DC}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{6FD68FC4-E4A8-4170-8857-8936205D76DC}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{6FD68FC4-E4A8-4170-8857-8936205D76DC}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{AFF499B4-5EE2-4625-A78A-C4EED58FF457} = {C2575602-1C2B-42BB-8235-39E35FD44E4F}
+		{5F1582FA-A969-4562-A8FA-4A05950D23DF} = {F4405F34-C72F-47F3-9FE8-8CA05E771984}
+		{6FD68FC4-E4A8-4170-8857-8936205D76DC} = {F4405F34-C72F-47F3-9FE8-8CA05E771984}
+	EndGlobalSection
+EndGlobal

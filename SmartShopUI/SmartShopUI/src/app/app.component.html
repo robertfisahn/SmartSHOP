@@ -1,0 +1,38 @@
+<header>
+  <nav class="navbar">
+    <div class="navbar-left">
+      <a class="navbar-brand" routerLink="/">SmartSHOP</a>
+      <a class="nav-link" routerLink="/product/all">All Products</a>
+    </div>
+    <div class="navbar-right">
+      <ng-container *ngIf="accountService.isLoggedIn(); else loginLink">
+        <button class="cart-btn" routerLink="/cart"><i class="fas fa-shopping-cart"></i>
+          <span *ngIf="cartItemCount > 0">
+            <span class="cart-count">{{ cartItemCount }}</span>
+          </span>
+        </button>
+        <div class="dropdown" (click)="toggleDropdown()">
+          <span class="user-info">{{ accountService.getUserEmail() }}</span>
+          <div class="dropdown-menu" [class.show]="dropdownOpen">
+            <a class="dropdown-item" (click)="logout()">Logout</a>
+            <a class="dropdown-item" routerLink="/settings">Settings</a>
+          </div>
+        </div>
+      </ng-container>
+      <ng-template #loginLink>
+        <button class="auth-btn" routerLink="/login"><i class="fas fa-sign-in-alt"></i> Login</button>
+      </ng-template>
+    </div>
+  </nav>
+</header>
+
+<main>
+  <router-outlet></router-outlet>
+</main>
+
+<footer class="footer">
+    <p>2024 powered by #Bullrun2024</p>
+    <img src="./assets/visa.png" alt="Opis obrazka" class="header-gif" />
+    <img src="./assets/mastercard.png" alt="Opis obrazka" class="header-gif" />
+    <img src="./assets/paypal.png" alt="Opis obrazka" class="header-gif" />
+</footer>
