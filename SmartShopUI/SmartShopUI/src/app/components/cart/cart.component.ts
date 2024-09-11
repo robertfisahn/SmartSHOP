@@ -3,6 +3,8 @@ import { CartItem } from '../../models/cartItem.dto.';
 import { CartService } from '../../services/cart/cart.service';
 import { ProductDto } from '../../models/product.dto';
 import { environment } from 'src/environments/environment';
+import { Router } from '@angular/router';
+import { OrderService } from '../../services/order/order.service';
 
 @Component({
   selector: 'app-cart',
@@ -15,7 +17,7 @@ export class CartComponent implements OnInit {
   userId: number = 0;
   totalAmount = 0;
 
-  constructor(private cartService: CartService) { }
+  constructor(private cartService: CartService, private router: Router, private orderService: OrderService) { }
 
   ngOnInit(): void {
     this.userId = +sessionStorage.getItem('userId')!;
@@ -78,5 +80,17 @@ export class CartComponent implements OnInit {
       () => this.loadCart(),
       error => console.error('Error clearing the cart', error)
     );
+  }
+
+  goToCreateOrder(): void {
+    this.orderService.createOrder().subscribe({
+      next: (orderId) => {
+        console.log('Order created successfully:', orderId);
+        this.router.navigate([`/order-details/${orderId}`]);
+      },
+      error: (err) => {
+        console.error('Error creating order:', err);
+      }
+    });
   }
 }

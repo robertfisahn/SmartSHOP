@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Mvc;
 using SmartShopAPI.Entities;
 using SmartShopAPI.Interfaces;
+using SmartShopAPI.Models;
 
 namespace SmartShopAPI.Controllers
 {
@@ -24,8 +25,8 @@ namespace SmartShopAPI.Controllers
         [ProducesResponseType(404)]
         public ActionResult Create()
         {
-            int OrderId = _orderService.Create();
-            return Created($"api/order/{OrderId}", null);
+            int id = _orderService.Create();
+            return CreatedAtAction(nameof(GetById), new { orderId = id }, new { orderId = id });
         }
 
         [HttpGet("{orderId}")]

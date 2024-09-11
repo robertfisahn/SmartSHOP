@@ -1,54 +1,101 @@
-﻿using SmartShopAPI.Models.Dtos.Product;
+﻿using Moq;
+using AutoMapper;
+using SmartShopAPI.Models;
+using SmartShopAPI.Models.Dtos.Product;
+using SmartShopAPI.Services;
 using SmartShopAPI.Tests.Helpers;
+using SmartShopAPI.Data;
 using SmartShopAPI.Exceptions;
 using SmartShopAPI.Models.Dtos;
+using Microsoft.EntityFrameworkCore;
+using Moq.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.ChangeTracking;
+using FluentAssertions;
 
-namespace SmartShopAPI.Tests.UnitTests.ServiceTests
+namespace SmartShopAPI.Tests
 {
-    public class ProductServiceUnitTests : UnitTestBase, IDisposable
+    public class ProductServiceUnitTests
     {
-        public ProductServiceUnitTests() : base() { }
+        private readonly Mock<SmartShopDbContext> _mockContext;
+        private readonly Mock<IMapper> _mockMapper;
+        private readonly ProductService _service;
+        private readonly List<Product> _products;
 
-        [Fact]
-        public async Task GetProducts_Succesfully()
+        public ProductServiceUnitTests()
         {
-            var queryParams = new QueryParams()
+            _mockContext = MockDbContext.CreateMockDbContext();
+            _mockMapper = new Mock<IMapper>();
+            _service = new ProductService(_mockContext.Object, _mockMapper.Object);
+
+            var categories = new List<Category> {
+                new () { Id = 1, Name = "PS4" },
+                new () { Id = 2, Name = "PS5" }
+             };
+            _products = new List<Product>
             {
-                PageNumber = 1,
-                PageSize = 10,
-                SearchPhrase = "Olej",
-                SortBy = "Price",
-                SortOrder = SortOrder.Descending
+                new () { Id = 1, Name = "The Last of Us Part II Remastered", Price = 199.99M, CategoryId = 2 },
+                new () { Id = 2, Name = "God of War", Price = 149.99M, CategoryId = 1 },
+                new () { Id = 3, Name = "Spider-Man 2", Price = 100.00M, CategoryId = 1 }
             };
-            var products = await _service.GetAsync(1, queryParams);
-            Assert.Equal(2, products.TotalCount);
-            Assert.Equal("Olej Motul 5w30", products.Items[0].Name);
+            var mockProducts = MockDbContext.CreateMockDbSet(_products);
+            var mockCategories = MockDbContext.CreateMockDbSet(categories);
+
+            _mockContext.Setup(c => c.Products).ReturnsDbSet(mockProducts);
+            _mockContext.Setup(c => c.Categories).ReturnsDbSet(mockCategories);
+            _mockContext.Setup(c => c.Products.AddAsync(It.IsAny<Product>(), It.IsAny<CancellationToken>()))
+                .Callback((Product p, CancellationToken ct) =>
+                {
+                    p.Id = _products.Max(x => x.Id) + 1;
+                    _products.Add(p);
+                });
+            _mockContext.Setup(c => c.Products.Remove(It.IsAny<Product>()))
+                .Callback((Product p) =>
+                {
+                    var productToRemove = _products.FirstOrDefault(p => p.Id == p.Id);
+                    if (productToRemove != null)
+                    {
+                        _products.Remove(productToRemove);
+                    }
+                });
+            _mockMapper.Setup(m => m.Map<ProductDto>(It.IsAny<Product>()))
+                .Returns((Product source) => new ProductDto { Id = source.Id, Name = source.Name });
+
+            _mockMapper.Setup(m => m.Map<Product>(It.IsAny<CreateProductDto>()))
+                .Returns((CreateProductDto dto) => new Product { Name = dto.Name, CategoryId = 1 });
+
+            _mockMapper.Setup(m => m.Map(It.IsAny<UpdateProductDto>(), It.IsAny<Product>()))
+                .Callback((UpdateProductDto dto, Product product) => {
+                    product.Name = dto.Name;
+                });
         }
 
-        [Fact]
-        public async Task CheckCategory_ExistingCategory_DoesNotThrowException()
+        [Theory]
+        [InlineData(1, false)]
+        [InlineData(88, true)]
+        public async Task CheckCategory_Validation(int categoryId, bool shouldThrow)
         {
-            var existingCategory = 1;
-            var exception = await Record.ExceptionAsync(() => _service.CheckCategory(existingCategory));
-            Assert.Null(exception);
+            Func<Task> act = () => _service.CheckCategory(categoryId);
+
+            if (shouldThrow)
+            {
+                await act.Should().ThrowAsync<NotFoundException>();
+            }
+            else
+            {
+                await act.Should().NotThrowAsync();
+            }
         }
 
         [Fact]
-        public async Task CheckCategory_NonExistingCategory_ThrowsNotFoundException()
-        {
-            var nonExistingCategory = 11;
-            await Assert.ThrowsAsync<NotFoundException>(() => _service.CheckCategory(nonExistingCategory));
-        }
-
-        [Fact]
-        public async Task GetById_ExistingProduct()
+        public async Task GetById_ExistingProduct() 
         {
             var existingProduct = await _service.GetByIdAsync(1);
             Assert.NotNull(existingProduct);
+            Assert.Equal(1, existingProduct.Id);
         }
 
         [Fact]
-        public async Task GetById_ThrowsNotFoundException()
+        public async Task GetById_NonExistingProduct_ThrowsNotFoundException()
         {
             var nonExistingProductId = 88;
             await Assert.ThrowsAsync<NotFoundException>(() => _service.GetByIdAsync(nonExistingProductId));
@@ -57,45 +104,40 @@ namespace SmartShopAPI.Tests.UnitTests.ServiceTests
         [Fact]
         public async Task Create_Product_Successfully()
         {
-            var newProductId = await _service.CreateAsync(1, ProductTestData.CreateProductDto, null);
-            Assert.NotNull(await _service.GetByIdAsync(newProductId));
-        }
-
-        [Fact]
-        public async Task Create_Product_NonExistingCategory_ThrowsNotFoundException()
-        {
-            await Assert.ThrowsAsync<NotFoundException>(() => _service.CreateAsync(0, ProductTestData.CreateProductDto, null));
+            var newProduct = new CreateProductDto { Name = "Spider-man 3", CategoryId = 1 };
+            var newProductId = await _service.CreateAsync(newProduct, null);
+            var createdProduct = await _service.GetByIdAsync(newProductId);
+            Assert.NotNull(createdProduct);
+            _mockContext.Verify(c => c.Products.AddAsync(It.IsAny<Product>(), It.IsAny<CancellationToken>()), Times.Once);
+            _mockContext.Verify(c => c.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.Once);
         }
 
         [Fact]
         public async Task Delete_Product_Successfully()
         {
-            await _service.DeleteAsync(1, 1);
-            var productExists = _context.Products.Any(p => p.Id == 1);
+            var existingProduct = await _service.GetByIdAsync(1);
+            await _service.DeleteAsync(existingProduct.Id);
+            var productExists = _mockContext.Object.Products.Any(p => p.Id == existingProduct.Id);
             Assert.False(productExists);
+            _mockContext.Verify(c => c.Products.Remove(It.Is<Product>(p => p.Id == existingProduct.Id)), Times.Once);
+            _mockContext.Verify(c => c.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.Once);
         }
 
         [Fact]
         public async Task Delete_Product_NonExistingProduct_ThrowsNotFoundException()
         {
-            var nonExistingProductId = 99;
-            await Assert.ThrowsAsync<NotFoundException>(() => _service.DeleteAsync(0, nonExistingProductId));
-        }
-
-        [Fact]
-        public async Task Delete_Product_NonExistingCategory_ThrowsNotFoundException()
-        {
-            var nonExistingCategorytId = 99;
-            await Assert.ThrowsAsync<NotFoundException>(() => _service.DeleteAsync(nonExistingCategorytId, 1));
+            var nonExistingProductId = 88;
+            await Assert.ThrowsAsync<NotFoundException>(() =>  _service.DeleteAsync(nonExistingProductId));
         }
 
         [Fact]
         public async Task Update_Product_Successfully()
         {
-            var dto = new UpdateProductDto { Name = "update product" };
+            var dto = new UpdateProductDto { Name = "Update product" };
             await _service.UpdateAsync(1, dto);
-            var updateProduct = _context.Products.FirstOrDefault(p => p.Id == 1);
-            Assert.Equal("update product", updateProduct.Name);
+            var updateProduct = await _mockContext.Object.Products.FirstOrDefaultAsync(p => p.Id == 1);
+            Assert.Equal("Update product", updateProduct.Name);
+            _mockContext.Verify(c => c.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.Once);
         }
 
         [Fact]
@@ -104,43 +146,66 @@ namespace SmartShopAPI.Tests.UnitTests.ServiceTests
             var nonExistingProductId = 99;
             var dto = new UpdateProductDto { Name = "Update Product" };
             await Assert.ThrowsAsync<NotFoundException>(() => _service.UpdateAsync(nonExistingProductId, dto));
+            _mockContext.Verify(c => c.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.Never);
         }
 
         [Fact]
         public async Task FilterProducts_ReturnsFilteredProducts()
         {
-            var result = await _service.FilterProducts(1, "5w30");
+            var result = await _service.FilterProducts(1, "Spider");
             Assert.Single(result);
-            Assert.Equal("Olej Motul 5w30", result[0].Name);
+            Assert.Equal("Spider-Man 2", result[0].Name);
         }
 
         [Fact]
         public void PaginateProducts_PaginatesCorrectly()
         {
+            _products.Add(new Product { Id = 4, Name = "Grand Theft Auto V", Price = 100.00M, CategoryId = 1 });
             int pageNumber = 2;
-            int pageSize = 10;
-            var additionalProducts = ProductTestData.Products;
-            _context.Products.AddRange(additionalProducts);
-            _context.SaveChanges();
-            var paginated = _service.PaginateProducts(_context.Products.ToList(), pageSize, pageNumber);
-            Assert.Single(paginated);
+            int pageSize = 2;
+            var paginated = _service.PaginateProducts(_products, pageNumber, pageSize);
+            Assert.Equal(2, paginated.Count);
+            Assert.Equal("Grand Theft Auto V", paginated[1].Name);
         }
 
-        [Theory]
-        [InlineData("Name", SortOrder.Ascending, 0, "Klocki hamulcowe Brembo")]
-        [InlineData("Name", SortOrder.Descending, 0, "Tłumik końcowy Akrapovic")]
-        [InlineData("Price", SortOrder.Ascending, 0, "Świeca zapłonowa NGK")]
-        [InlineData("Price", SortOrder.Descending, 0, "Tłumik końcowy Akrapovic")]
-        public void SortProducts(string sortBy, SortOrder sortOrder, int expectedPosition, string productName)
+        [Fact]
+        public void SortProducts_ByNameAscending()
         {
-            var sort = _service.SortProducts(_context.Products.ToList(), sortOrder, sortBy).ToList();
-            Assert.Equal(productName, sort[expectedPosition].Name);
+            var sortBy = "Name";
+            var sortOrder = SortOrder.Ascending;
+            var sort = _service.SortProducts(_products, sortOrder, sortBy).ToList();
+            Assert.Equal("God of War", sort[0].Name);
+            Assert.Equal("The Last of Us Part II Remastered", sort[2].Name);
         }
 
-        public void Dispose()
+        [Fact]
+        public void SortProducts_ByPriceAscending()
+        {   
+            var sortBy = "Price";
+            var sortOrder = SortOrder.Ascending;
+            var sort = _service.SortProducts(_products, sortOrder, sortBy).ToList();
+            Assert.Equal("Spider-Man 2", sort[0].Name);
+            Assert.Equal("The Last of Us Part II Remastered", sort[2].Name);
+        }
+
+        [Fact]
+        public void SortProducts_ByPriceDescending()
         {
-            _context.Database.EnsureDeleted();
-            _context.Dispose();
+            var sortBy = "Price";
+            var sortOrder = SortOrder.Descending;
+            var sort = _service.SortProducts(_products, sortOrder, sortBy).ToList();
+            Assert.Equal("The Last of Us Part II Remastered", sort[0].Name);
+            Assert.Equal("Spider-Man 2", sort[2].Name);
+        }
+
+        [Fact]
+        public void SortProducts_ByNameDescending()
+        {
+            var sortBy = "Name";
+            var sortOrder = SortOrder.Descending;
+            var sort = _service.SortProducts(_products, sortOrder, sortBy).ToList();
+            Assert.Equal("The Last of Us Part II Remastered", sort[0].Name);
+            Assert.Equal("God of War", sort[2].Name);
         }
     }
 }

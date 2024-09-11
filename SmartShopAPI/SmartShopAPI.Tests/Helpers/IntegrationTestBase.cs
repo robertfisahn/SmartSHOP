@@ -2,6 +2,7 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using SmartShopAPI.Data;
+using SmartShopAPI.Models.Dtos;
 using SmartShopAPI.Models.Dtos.User;
 using System.Net.Http.Headers;
 using System.Net.Http.Json;
@@ -15,25 +16,21 @@ namespace SmartShopAPI.Tests.IntegrationTests
 
         public IntegrationTestBase(WebApplicationFactory<Program> factory)
         {
-            _factory = factory;
-            _client = factory
+            _factory = factory
                 .WithWebHostBuilder(builder =>
                 {
                     builder.ConfigureServices(services =>
                     {
                         var dbContextOptions = services
                             .SingleOrDefault(service => service.ServiceType == typeof(DbContextOptions<SmartShopDbContext>));
-                        if (dbContextOptions != null)   
+                        if (dbContextOptions != null)
                         {
                             services.Remove(dbContextOptions);
                         }
                         services.AddDbContext<SmartShopDbContext>(options => options.UseInMemoryDatabase("SmartShopDb"));
                     });
-                })
-                .CreateClient();
-            using var scope = factory.Services.CreateScope();
-            var seeder = scope.ServiceProvider.GetRequiredService<SmartShopSeeder>();
-            seeder.Seed();
+                });
+            _client = _factory.CreateClient();
         }
 
         private async Task<string> GetJwtTokenAsync(string email, string password)
@@ -42,9 +39,10 @@ namespace SmartShopAPI.Tests.IntegrationTests
 
             var response = await _client.PostAsJsonAsync("api/account/login", loginDto);
             response.EnsureSuccessStatusCode();
+            
 
-            var token = await response.Content.ReadAsStringAsync();
-            return token;
+            var dto = await response.Content.ReadFromJsonAsync<ResponseDto>();
+            return dto.Token;
         }
 
         protected async Task ConfigureClientForAdminAsync()

@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using SmartShopAPI.Interfaces;
+using SmartShopAPI.Models;
 using SmartShopAPI.Models.Dtos;
 using SmartShopAPI.Models.Dtos.Product;
 
@@ -60,36 +61,36 @@ namespace SmartShopAPI.Controllers
             return Ok(product);
         }
 
-        [HttpPost(Name="CreateProduct")]
+        [HttpPost("product")]
         [ProducesResponseType(201)]
         [ProducesResponseType(400)]
         [ProducesResponseType(401)]
         [ProducesResponseType(403)]
         [ProducesResponseType(404)]
-        public async Task<ActionResult> Create([FromRoute]int categoryId, [FromBody]CreateProductDto dto, IFormFile? file)
+        public async Task<ActionResult> Create([FromForm]CreateProductDto dto, IFormFile? file)
         {
-            var productId = await _productService.CreateAsync(categoryId, dto, file);
-            return Created($"category/{categoryId}/product/{productId}", null);
+            var productId = await _productService.CreateAsync(dto, file);
+            return Created($"api/product/{productId}", null);
         }
 
-        [HttpDelete("{productId}")]
+        [HttpDelete("product/{productId}")]
         [ProducesResponseType(204)]
         [ProducesResponseType(401)]
         [ProducesResponseType(403)]
         [ProducesResponseType(404)]
-        public async Task<ActionResult> Delete([FromRoute]int categoryId, [FromRoute]int productId) 
+        public async Task<ActionResult> Delete([FromRoute]int productId) 
         {
-            await _productService.DeleteAsync(categoryId, productId);
+            await _productService.DeleteAsync(productId);
             return NoContent();
         }
 
-        [HttpPut("{productId}")]
+        [HttpPut("product/{productId}")]
         [ProducesResponseType(204)]
         [ProducesResponseType(400)]
         [ProducesResponseType(401)]
         [ProducesResponseType(403)]
         [ProducesResponseType(404)]
-        public async Task<ActionResult> Update([FromRoute]int productId, UpdateProductDto dto)
+        public async Task<ActionResult> Update([FromRoute]int productId, [FromForm]UpdateProductDto dto)
         {
             await _productService.UpdateAsync(productId, dto);
             return NoContent();

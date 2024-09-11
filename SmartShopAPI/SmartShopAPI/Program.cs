@@ -96,7 +96,7 @@ builder.Services.AddSwaggerGen(options =>
 builder.Services.AddAutoMapper(typeof(SmartShopMappingProfile));
 builder.Services.AddCors(options =>
 {
-    options.AddPolicy("AllowAngularApp",
+    options.AddPolicy("AllowSmartShopUI",
         builder => builder.WithOrigins("http://localhost:4200", "http://localhost:4288")
                           .AllowAnyHeader()
                           .AllowAnyMethod());
@@ -114,7 +114,7 @@ if (app.Environment.IsDevelopment())
     app.UseSwagger();
     app.UseSwaggerUI();
 }
-app.UseCors("AllowAngularApp");
+app.UseCors("AllowSmartShopUI");
 app.UseRouting();
 app.UseMiddleware<ErrorHandlingMiddleware>();
 app.UseAuthentication();

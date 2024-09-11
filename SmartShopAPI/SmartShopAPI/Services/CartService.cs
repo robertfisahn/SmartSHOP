@@ -42,7 +42,6 @@ namespace SmartShopAPI.Services
         public int AddItemToCart(CreateCartItemDto dto)
         {
             var existingCartItem = _context.CartItems
-                .Include(c=>c.Product)
                 .FirstOrDefault(ci => ci.ProductId == dto.ProductId && ci.UserId == _userContextService.GetUserId());
             CartItem cartItem;
             if (existingCartItem != null)

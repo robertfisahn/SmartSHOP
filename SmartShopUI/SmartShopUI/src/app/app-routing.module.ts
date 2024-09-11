@@ -7,8 +7,14 @@ import { AccountLoginComponent } from './components/account/account-login/accoun
 import { AccountRegisterComponent } from './components/account/account-register/account-register.component';
 import { AccountDetailsComponent } from './components/account/account-details/account-details.component';
 import { CartComponent } from './components/cart/cart.component';
+import { OrderCreateComponent } from './components/order/order-create/order-create.component';
+import { OrderConfirmationComponent } from './components/order/order-confirmation/order-confirmation.component';
+import { OrderDetailsComponent } from './components/order/order-details/order-details.component';
 
 const routes: Routes = [
+  { path: 'order-details/:orderId', component: OrderDetailsComponent },
+  { path: 'order-confirmation', component: OrderConfirmationComponent },
+  { path: 'order-create', component: OrderCreateComponent },
   { path: 'cart', component: CartComponent },
   { path: 'account-details', component: AccountDetailsComponent },
   { path: 'registration', component: AccountRegisterComponent },

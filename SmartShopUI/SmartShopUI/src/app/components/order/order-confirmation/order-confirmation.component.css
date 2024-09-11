@@ -1,0 +1,9 @@
+.order-confirmation {
+    padding-top: 120px;
+    color:white;
+    font-size: 40px;
+}
+
+  .order-confirmation a {
+      text-decoration: none;
+  }

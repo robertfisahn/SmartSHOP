@@ -1,5 +1,4 @@
 .cart {
-    padding-top: 130px;
     padding-bottom: 50px;
     color: white;
 }
@@ -27,6 +26,23 @@
   .btn-clear:hover {
     background-color: #ff1a1a;
     border-color: darkred;
+  }
+
+.btn-order {
+  background-color: #004682;
+  max-width: 200px;
+  color: white;
+  border: none;
+  padding: 4px 12px;
+  border-radius: 4px;
+  cursor: pointer;
+  text-align: center;
+}
+
+  .btn-order:hover {
+    border-radius: 5px;
+    background-color: #0070d1;
+    box-shadow: 0 0 15px 1px rgba(0, 112, 209, 0.7);
   }
 
 .cart-item {

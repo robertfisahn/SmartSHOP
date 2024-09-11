@@ -27,7 +27,9 @@ namespace SmartShopAPI.Services
         public Order GetById(int orderId)
         {
             var order = _context.Orders
-                .Include(x => x.OrderItems)
+                .Include(o => o.OrderItems)
+                    .ThenInclude(oi => oi.Product)
+                .Include(o => o.Address)
                 .SingleOrDefault(o => o.Id == orderId) ?? throw new NotFoundException("Order not found");
             var authorizationResult = _authorizationService.AuthorizeAsync(_userContextService.User, order,
                 new ResourceOperationRequirement(ResourceOperation.Delete)).Result;

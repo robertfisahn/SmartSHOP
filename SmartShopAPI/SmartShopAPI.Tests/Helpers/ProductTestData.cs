@@ -1,25 +1,9 @@
-﻿using SmartShopAPI.Models;
-using SmartShopAPI.Models.Dtos;
-using SmartShopAPI.Models.Dtos.Product;
-using System.Diagnostics.Contracts;
+﻿using SmartShopAPI.Models.Dtos;
 
 namespace SmartShopAPI.Tests.Helpers
 {
     public class ProductTestData
     {
-        public static List<Category> Categories => new()
-            {
-                new Category { Id = 1, Name = "Electronics" },
-            };
-
-        public static List<Product> Products => new List<Product>
-        {
-            new Product { Name = "Product1", Description = "Description for Product1", Price = 10.00M, StockQuantity = 100, CategoryId = 1 },
-            new Product { Name = "Product2", Description = "Description for Product2", Price = 20.00M, StockQuantity = 150, CategoryId = 1 },
-            new Product { Name = "Product3", Description = "Description for Product3", Price = 30.00M, StockQuantity = 200, CategoryId = 1 },
-            new Product { Name = "Product4", Description = "Description for Product4", Price = 40.00M, StockQuantity = 250, CategoryId = 1 }
-        };
-
         public static QueryParams QueryParams => 
             new ()
             {
@@ -67,31 +51,61 @@ namespace SmartShopAPI.Tests.Helpers
                 } }
             };
 
-        public static IEnumerable<object[]> InvalidProductDataList =>
+        public static IEnumerable<object[]> InvalidCreateProductMultiparts =>
             new List<object[]>
             {
-                new object[] { new CreateProductDto { Name = "Oil Castrol", Price = 0 , Description = "5w30"} },
-                new object[] { new CreateProductDto { Name = "Oil Motul", Price = -1, Description = "5w50" } },
-                new object[] { new CreateProductDto { Name = "", Price = 10, Description = "5w40" } },
+                new object[] { new MultipartFormDataContent ()
+                {
+                    { new StringContent(""), "Name" }, //invalid name
+                    { new StringContent("Test Description"), "Description" },
+                    { new StringContent("59,999"), "Price" },
+                    { new StringContent("100"), "StockQuantity" },
+                    { new StringContent("1"), "CategoryId" }
+                } },
+                new object[] { new MultipartFormDataContent ()
+                {
+                    { new StringContent("Test Product"), "Name" },
+                    { new StringContent("Test Description"), "Description" },
+                    { new StringContent("-10"), "Price" }, //invalid price
+                    { new StringContent("100"), "StockQuantity" },
+                    { new StringContent("1"), "CategoryId" }
+                } },
+                new object[] { new MultipartFormDataContent ()
+                {
+                    { new StringContent("Test Product"), "Name" },
+                    { new StringContent("Test Description"), "Description" },
+                    { new StringContent("1111111111"), "Price" }, //invalid price
+                    { new StringContent("100"), "StockQuantity" },
+                    { new StringContent("1"), "CategoryId" }
+                } }
             };
 
-        public static CreateProductDto CreateProductDto => 
-            new ()
-            { 
-                Name = "Motul Oil", 
-                Description = "15w30", 
-                Price = 150
-            };
-
-        public static UpdateProductDto UpdateProductDto =>
+        public static MultipartFormDataContent CreateProductMultipart =>
             new ()
             {
-                Name = "Updated product",
-                Description = "Updated Description",
-                Price = 88,
-                StockQuantity = 88
+                { new StringContent("Test Product"), "Name" },
+                { new StringContent("Test Description"), "Description" },
+                { new StringContent("59,99"), "Price" },
+                { new StringContent("100"), "StockQuantity" },
+                { new StringContent("1"), "CategoryId" }
             };
 
-        public static UpdateProductDto InvalidUpdateProductDto => new () { Name = "" };
+        public static MultipartFormDataContent UpdateProductMultipart =>
+            new()
+            {
+                { new StringContent("Update Product"), "Name" },
+                { new StringContent("Update Description"), "Description" },
+                { new StringContent("88,88"), "Price" },
+                { new StringContent("88"), "StockQuantity" }
+            };
+
+        public static MultipartFormDataContent InvalidUpdateProductMultipart =>
+            new()
+            {
+                { new StringContent(""), "Name" }, //invalid name
+                { new StringContent("Update Description"), "Description" },
+                { new StringContent("88,88"), "Price" },
+                { new StringContent("88"), "StockQuantity" },
+            };
     }
 }

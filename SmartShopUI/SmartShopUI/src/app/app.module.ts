@@ -14,6 +14,9 @@ import { AccountRegisterComponent } from './components/account/account-register/
 import { AccountLoginComponent } from './components/account/account-login/account-login.component';
 import { AccountDetailsComponent } from './components/account/account-details/account-details.component';
 import { CartComponent } from './components/cart/cart.component';
+import { OrderCreateComponent } from './components/order/order-create/order-create.component';
+import { OrderConfirmationComponent } from './components/order/order-confirmation/order-confirmation.component';
+import { OrderDetailsComponent } from './components/order/order-details/order-details.component';
 
 @NgModule({
   declarations: [
@@ -24,7 +27,10 @@ import { CartComponent } from './components/cart/cart.component';
     AccountRegisterComponent,
     AccountLoginComponent,
     AccountDetailsComponent,
-    CartComponent
+    CartComponent,
+    OrderCreateComponent,
+    OrderConfirmationComponent,
+    OrderDetailsComponent
   ],
   imports: [
     BrowserModule,

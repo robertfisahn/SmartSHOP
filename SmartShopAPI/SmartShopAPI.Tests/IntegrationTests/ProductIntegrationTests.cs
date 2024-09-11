@@ -4,6 +4,7 @@ using System.Net.Http.Json;
 using FluentAssertions;
 using SmartShopAPI.Tests.Helpers;
 using SmartShopAPI.Models.Dtos.Product;
+using System.Net.Http.Headers;
 
 namespace SmartShopAPI.Tests.IntegrationTests
 {
@@ -14,9 +15,8 @@ namespace SmartShopAPI.Tests.IntegrationTests
         [Fact]
         public async Task GetById_ReturnsOk()
         {
-            var categoryId = 1;
-            var productId = 1;
-            var response = await _client.GetAsync($"/api/category/{categoryId}/product/{productId}");
+            var productId = 2;
+            var response = await _client.GetAsync($"/api/product/{productId}");
             response.StatusCode.Should().Be(System.Net.HttpStatusCode.OK);
         }
 
@@ -60,21 +60,24 @@ namespace SmartShopAPI.Tests.IntegrationTests
         }
 
         [Fact]
-        public async Task Create_ReturnsCreated()
+        public async Task Create_ReturnsCreated_WhenProductIsCreatedWithoutFile()
         {
             await ConfigureClientForAdminAsync();
-            var categoryId = 1;
-            var response = await _client.PostAsJsonAsync($"/api/category/{categoryId}/product", ProductTestData.CreateProductDto);
+
+            var content = ProductTestData.CreateProductMultipart;
+
+            var response = await _client.PostAsync("/api/product", content);
+            response.EnsureSuccessStatusCode();
+
             response.StatusCode.Should().Be(System.Net.HttpStatusCode.Created);
         }
 
-        [Theory]
-        [MemberData(nameof(ProductTestData.InvalidProductDataList), MemberType = typeof(ProductTestData))]
-        public async Task Create_InvalidProductData_ReturnsBadRequest(CreateProductDto createProductDto)
+        [Theory] 
+        [MemberData(nameof(ProductTestData.InvalidCreateProductMultiparts), MemberType = typeof(ProductTestData))]
+        public async Task Create_InvalidProductData_ReturnsBadRequest(MultipartFormDataContent createProductMultipart)
         {
             await ConfigureClientForAdminAsync();
-            var categoryId = 1;
-            var response = await _client.PostAsJsonAsync($"/api/category/{categoryId}/product", createProductDto);
+            var response = await _client.PostAsync("/api/product", createProductMultipart);
             response.StatusCode.Should().Be(System.Net.HttpStatusCode.BadRequest);
         }
 
@@ -87,40 +90,30 @@ namespace SmartShopAPI.Tests.IntegrationTests
             {
                 await ConfigureClientForUserAsync();
             }
-            var categoryId = 1;
-            var response = await _client.PostAsJsonAsync($"/api/category/{categoryId}/product", ProductTestData.CreateProductDto);
-            response.StatusCode.Should().Be(expectedStatusCode);
-        }
 
-        [Fact]
-        public async Task Create_InvalidCategoryId_ReturnsNotFound()
-        {
-            await ConfigureClientForAdminAsync();
-            var invalidCategoryId = 88;
-            var response = await _client.PostAsJsonAsync($"/api/category/{invalidCategoryId}/product", ProductTestData.CreateProductDto);
-            response.StatusCode.Should().Be(System.Net.HttpStatusCode.NotFound);
+            var response = await _client.PostAsync("/api/product", ProductTestData.CreateProductMultipart);
+            response.StatusCode.Should().Be(expectedStatusCode);
         }
 
         [Fact]
         public async Task Delete_ReturnsNoContent()
         {
             await ConfigureClientForAdminAsync();
-            var categoryId = 1;
             var productId = 2;
-            var response = await _client.DeleteAsync($"/api/category/{categoryId}/product/{productId}");
+            var response = await _client.DeleteAsync($"/api/product/{productId}");
             response.StatusCode.Should().Be(System.Net.HttpStatusCode.NoContent);
         }
 
         [Theory]
-        [InlineData(1, 2, false, System.Net.HttpStatusCode.Unauthorized)]
-        [InlineData(1, 2, true, System.Net.HttpStatusCode.Forbidden)]
-        public async Task Delete_ReturnsForbidden(int categoryId, int productId, bool isUser, System.Net.HttpStatusCode expectedStatusCode)
+        [InlineData(2, false, System.Net.HttpStatusCode.Unauthorized)]
+        [InlineData(2, true, System.Net.HttpStatusCode.Forbidden)]
+        public async Task Delete_ReturnsForbidden(int productId, bool isUser, System.Net.HttpStatusCode expectedStatusCode)
         {
             if(isUser)
             {
                 await ConfigureClientForUserAsync();
             }
-            var response = await _client.DeleteAsync($"/api/category/{categoryId}/product/{productId}");
+            var response = await _client.DeleteAsync($"/api/product/{productId}");
             response.StatusCode.Should().Be(expectedStatusCode);
         }
 
@@ -138,9 +131,8 @@ namespace SmartShopAPI.Tests.IntegrationTests
         public async Task Update_ReturnsNoContent()
         {
             await ConfigureClientForAdminAsync();
-            var categoryId = 1;
             var productId = 1;
-            var response = await _client.PutAsJsonAsync($"/api/category/{categoryId}/product/{productId}", ProductTestData.UpdateProductDto);
+            var response = await _client.PutAsync($"/api/product/{productId}", ProductTestData.UpdateProductMultipart);
             response.StatusCode.Should().Be(System.Net.HttpStatusCode.NoContent);
         }
 
@@ -148,22 +140,21 @@ namespace SmartShopAPI.Tests.IntegrationTests
         public async Task Update_ReturnsBadRequest()
         {
             await ConfigureClientForAdminAsync();
-            var categoryId = 1;
             var productId = 1;
-            var response = await _client.PutAsJsonAsync($"/api/category/{categoryId}/product/{productId}", ProductTestData.InvalidUpdateProductDto);
+            var response = await _client.PutAsync($"/api/product/{productId}", ProductTestData.InvalidUpdateProductMultipart);
             response.StatusCode.Should().Be(System.Net.HttpStatusCode.BadRequest);
         }
 
         [Theory]
-        [InlineData(1, 1, false, System.Net.HttpStatusCode.Unauthorized)]
-        [InlineData(1, 1, true, System.Net.HttpStatusCode.Forbidden)]
-        public async Task Update_ReturnsUnauthorized(int categoryId, int productId, bool isUser, System.Net.HttpStatusCode expectedStatusCode)
+        [InlineData(1, false, System.Net.HttpStatusCode.Unauthorized)]
+        [InlineData(1, true, System.Net.HttpStatusCode.Forbidden)]
+        public async Task Update_ReturnsUnauthorized(int productId, bool isUser, System.Net.HttpStatusCode expectedStatusCode)
         {
             if (isUser)
             {
                 await ConfigureClientForUserAsync();
             }
-            var response = await _client.PutAsJsonAsync($"/api/category/{categoryId}/product/{productId}", ProductTestData.UpdateProductDto);
+            var response = await _client.PutAsync($"/api/product/{productId}", ProductTestData.UpdateProductMultipart);
             response.StatusCode.Should().Be(expectedStatusCode);
         }
 
@@ -171,9 +162,8 @@ namespace SmartShopAPI.Tests.IntegrationTests
         public async Task Update_ReturnsForbidden()
         {
             await ConfigureClientForUserAsync();
-            var categoryId = 1;
             var productId = 1;
-            var response = await _client.PutAsJsonAsync($"/api/category/{categoryId}/product/{productId}", ProductTestData.UpdateProductDto);
+            var response = await _client.PutAsync($"/api/product/{productId}", ProductTestData.UpdateProductMultipart);
             response.StatusCode.Should().Be(System.Net.HttpStatusCode.Forbidden);
         }
 
@@ -181,9 +171,8 @@ namespace SmartShopAPI.Tests.IntegrationTests
         public async Task Update_ReturnsNotFound()
         {
             await ConfigureClientForAdminAsync();
-            var categoryId = 1;
             var invalidProductId = 88;
-            var response = await _client.PutAsJsonAsync($"/api/category/{categoryId}/product/{invalidProductId}", ProductTestData.UpdateProductDto);
+            var response = await _client.PutAsync($"/api/product/{invalidProductId}", ProductTestData.UpdateProductMultipart);
             response.StatusCode.Should().Be(System.Net.HttpStatusCode.NotFound);
         }
     }

@@ -17,7 +17,6 @@ namespace SmartShopAPI.Models.Validators
             RuleFor(x => x.Name)
                 .NotEmpty().WithMessage("Name cannot be empty")
                 .MaximumLength(50).WithMessage("Name cannot be more than 50 characters long");
-
         }
     }
 }

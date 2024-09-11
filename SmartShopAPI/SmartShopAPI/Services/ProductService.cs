@@ -6,6 +6,7 @@ using SmartShopAPI.Models.Dtos.Product;
 using SmartShopAPI.Interfaces;
 using SmartShopAPI.Models.Dtos;
 using Microsoft.EntityFrameworkCore;
+using System.Collections.Generic;
 
 namespace SmartShopAPI.Services
 {
@@ -53,25 +54,22 @@ namespace SmartShopAPI.Services
             return _mapper.Map<ProductDto>(product);
         }
 
-        public async Task<int> CreateAsync(int categoryId, CreateProductDto dto, IFormFile? file)
+        public async Task<int> CreateAsync(CreateProductDto dto, IFormFile? file)
         {
-            await CheckCategory(categoryId);
+            await CheckCategory(dto.CategoryId);
             var product = _mapper.Map<Product>(dto);
-            product.CategoryId = categoryId;
             if (file != null)
             {
                 product.ImagePath = await SaveImageAsync(file);
-            }
+            } 
             await _context.Products.AddAsync(product);
             await _context.SaveChangesAsync();
             return product.Id;
         }
 
-        public async Task DeleteAsync(int categoryId, int productId)
+        public async Task DeleteAsync(int productId)
         {
-            await CheckCategory(categoryId);
             var product = await _context.Products
-                .Where(x => x.CategoryId == categoryId)
                 .FirstOrDefaultAsync(p => p.Id == productId) ?? throw new NotFoundException("Product not found");
             _context.Products.Remove(product);
             await _context.SaveChangesAsync();
@@ -106,10 +104,10 @@ namespace SmartShopAPI.Services
             if (!string.IsNullOrEmpty(sortBy))
             {
                 var columnSelector = new Dictionary<string, Func<Product, object>>
-        {
-            { nameof(Product.Name), r => r.Name },
-            { nameof(Product.Price), r => r.Price }
-        };
+                {
+                    { nameof(Product.Name), r => r.Name },
+                    { nameof(Product.Price), r => r.Price }
+                };
 
                 var selectedColumn = columnSelector[sortBy];
 

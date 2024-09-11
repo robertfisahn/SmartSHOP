@@ -19,7 +19,7 @@ namespace SmartShopAPI.Data
 
         public void Seed()
         {
-            if (_context.Database.GetPendingMigrations().Any())
+            if (_context.Database.IsRelational() && _context.Database.GetPendingMigrations().Any())
             {
                 _context.Database.Migrate();
             }

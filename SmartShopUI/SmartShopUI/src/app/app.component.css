@@ -129,6 +129,7 @@
   }
 
 main {
+  padding-top: 120px;
   flex-grow: 1;
   display: flex;
   background-color: black;
