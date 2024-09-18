@@ -5,6 +5,7 @@ import { tap } from 'rxjs/operators';
 import { RegisterUserDto } from '../../models/registerUser.dto';
 import { CartService } from '../cart/cart.service';
 import { environment } from 'src/environments/environment';
+import { jwtDecode } from 'jwt-decode';
 
 @Injectable({
   providedIn: 'root'
@@ -47,4 +48,13 @@ export class AccountService {
     return sessionStorage.getItem('userEmail');
   }
 
+  isAdmin() {
+    const token = sessionStorage.getItem('token');
+    if (token) {
+      const decodedToken: any = jwtDecode(token);
+      const userRole = decodedToken['http://schemas.microsoft.com/ws/2008/06/identity/claims/role'];
+      return userRole === 'Admin';
+    }
+    return false;
+  }
 }

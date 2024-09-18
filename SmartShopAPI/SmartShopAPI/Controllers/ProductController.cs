@@ -67,7 +67,7 @@ namespace SmartShopAPI.Controllers
         [ProducesResponseType(401)]
         [ProducesResponseType(403)]
         [ProducesResponseType(404)]
-        public async Task<ActionResult> Create([FromForm]CreateProductDto dto, IFormFile? file)
+        public async Task<ActionResult> Create([FromForm]UpsertProductDto dto, IFormFile? file)
         {
             var productId = await _productService.CreateAsync(dto, file);
             return Created($"api/product/{productId}", null);
@@ -90,9 +90,9 @@ namespace SmartShopAPI.Controllers
         [ProducesResponseType(401)]
         [ProducesResponseType(403)]
         [ProducesResponseType(404)]
-        public async Task<ActionResult> Update([FromRoute]int productId, [FromForm]UpdateProductDto dto)
+        public async Task<ActionResult> Update([FromRoute]int productId, [FromForm]UpsertProductDto dto, IFormFile? file)
         {
-            await _productService.UpdateAsync(productId, dto);
+            await _productService.UpdateAsync(productId, dto, file);
             return NoContent();
         }
     }

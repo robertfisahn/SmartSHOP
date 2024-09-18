@@ -10,8 +10,14 @@ import { CartComponent } from './components/cart/cart.component';
 import { OrderCreateComponent } from './components/order/order-create/order-create.component';
 import { OrderConfirmationComponent } from './components/order/order-confirmation/order-confirmation.component';
 import { OrderDetailsComponent } from './components/order/order-details/order-details.component';
+import { ProductCreateComponent } from './components/product/product-create/product-create.component';
+import { ProductUpdateComponent } from './components/product/product-update/product-update.component';
+import { ProductDeleteComponent } from './components/product/product-delete/product-delete.component';
 
 const routes: Routes = [
+  { path: 'product-delete/:productId', component: ProductDeleteComponent },
+  { path: 'product-update/:productId', component: ProductUpdateComponent },
+  { path: 'product-create', component: ProductCreateComponent },
   { path: 'order-details/:orderId', component: OrderDetailsComponent },
   { path: 'order-confirmation', component: OrderConfirmationComponent },
   { path: 'order-create', component: OrderCreateComponent },

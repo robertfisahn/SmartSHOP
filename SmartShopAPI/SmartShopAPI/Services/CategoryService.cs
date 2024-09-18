@@ -20,7 +20,6 @@ namespace SmartShopAPI.Services
         public IEnumerable<CategoryDto> GetAll()
         {
             var categories = _context.Categories
-                .Include(x => x.Products)
                 .ToList();
             var dto = _mapper.Map<List<CategoryDto>>(categories);
             return dto;

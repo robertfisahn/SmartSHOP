@@ -6,7 +6,6 @@ using SmartShopAPI.Models.Dtos.Product;
 using SmartShopAPI.Interfaces;
 using SmartShopAPI.Models.Dtos;
 using Microsoft.EntityFrameworkCore;
-using System.Collections.Generic;
 
 namespace SmartShopAPI.Services
 {
@@ -54,14 +53,14 @@ namespace SmartShopAPI.Services
             return _mapper.Map<ProductDto>(product);
         }
 
-        public async Task<int> CreateAsync(CreateProductDto dto, IFormFile? file)
+        public async Task<int> CreateAsync(UpsertProductDto dto, IFormFile? file)
         {
             await CheckCategory(dto.CategoryId);
+            await CheckUniqueName(dto.Name, null);
+
             var product = _mapper.Map<Product>(dto);
-            if (file != null)
-            {
-                product.ImagePath = await SaveImageAsync(file);
-            } 
+            product.ImagePath = file != null ? await SaveImageAsync(file) : "images/products/default.jpg";
+
             await _context.Products.AddAsync(product);
             await _context.SaveChangesAsync();
             return product.Id;
@@ -71,16 +70,62 @@ namespace SmartShopAPI.Services
         {
             var product = await _context.Products
                 .FirstOrDefaultAsync(p => p.Id == productId) ?? throw new NotFoundException("Product not found");
+            if (!IsDefaultImage(product.ImagePath))
+            {
+                DeleteFile(product.ImagePath!);
+            }
             _context.Products.Remove(product);
             await _context.SaveChangesAsync();
         }
 
-        public async Task UpdateAsync(int productId, UpdateProductDto dto)
+        public async Task UpdateAsync(int productId, UpsertProductDto dto, IFormFile? file)
         {
             var product = await _context.Products
                 .FirstOrDefaultAsync(x => x.Id == productId) ?? throw new NotFoundException("Product not found");
+            
+            await CheckUniqueName(dto.Name, productId);
+            product.UpdatedDate = DateTime.Now;
+            if (file != null)
+            {
+                await UpdateProductImageAsync(product, dto, file);
+            }
             _mapper.Map(dto, product);
             await _context.SaveChangesAsync();
+        }
+
+        private bool IsDefaultImage(string? imagePath)
+        {
+            var defaultPath = "images/products/default.jpg";
+            return imagePath == defaultPath;
+        }
+
+        private async Task UpdateProductImageAsync(Product product, UpsertProductDto dto, IFormFile file)
+        {
+            if (!IsDefaultImage(product.ImagePath))
+            {
+                DeleteFile(product.ImagePath!);
+            }
+
+            dto.ImagePath = await SaveImageAsync(file);
+        }
+
+        public void DeleteFile(string imagePath)
+        {
+            var fullImagePath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", imagePath);
+            if (File.Exists(fullImagePath))
+            {
+                File.Delete(fullImagePath);
+            }
+        }
+
+        public async Task CheckUniqueName(string productName, int? productId)
+        {
+            bool productExists = await _context.Products
+                .AnyAsync(p => p.Name == productName && (productId == null || p.Id != productId));
+            if (productExists)
+            {
+                throw new BadRequestException("Product with the same name already exists.");
+            }
         }
 
         public async Task CheckCategory(int categoryId)

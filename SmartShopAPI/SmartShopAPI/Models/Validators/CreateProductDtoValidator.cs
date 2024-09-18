@@ -4,7 +4,7 @@ using SmartShopAPI.Models.Dtos.Product;
 
 namespace SmartShopAPI.Models.Validators
 {
-    public class CreateProductDtoValidator : AbstractValidator<CreateProductDto>
+    public class CreateProductDtoValidator : AbstractValidator<UpsertProductDto>
     {
         public CreateProductDtoValidator()
         {

@@ -9,7 +9,6 @@ using SmartShopAPI.Exceptions;
 using SmartShopAPI.Models.Dtos;
 using Microsoft.EntityFrameworkCore;
 using Moq.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.ChangeTracking;
 using FluentAssertions;
 
 namespace SmartShopAPI.Tests
@@ -33,7 +32,7 @@ namespace SmartShopAPI.Tests
              };
             _products = new List<Product>
             {
-                new () { Id = 1, Name = "The Last of Us Part II Remastered", Price = 199.99M, CategoryId = 2 },
+                new () { Id = 1, Name = "The Last of Us Part II Remastered", Price = 199.99M, CategoryId = 2, ImagePath = "images/products/defaultt.jpg" },
                 new () { Id = 2, Name = "God of War", Price = 149.99M, CategoryId = 1 },
                 new () { Id = 3, Name = "Spider-Man 2", Price = 100.00M, CategoryId = 1 }
             };
@@ -60,11 +59,11 @@ namespace SmartShopAPI.Tests
             _mockMapper.Setup(m => m.Map<ProductDto>(It.IsAny<Product>()))
                 .Returns((Product source) => new ProductDto { Id = source.Id, Name = source.Name });
 
-            _mockMapper.Setup(m => m.Map<Product>(It.IsAny<CreateProductDto>()))
-                .Returns((CreateProductDto dto) => new Product { Name = dto.Name, CategoryId = 1 });
+            _mockMapper.Setup(m => m.Map<Product>(It.IsAny<UpsertProductDto>()))
+                .Returns((UpsertProductDto dto) => new Product { Name = dto.Name, CategoryId = 1 });
 
-            _mockMapper.Setup(m => m.Map(It.IsAny<UpdateProductDto>(), It.IsAny<Product>()))
-                .Callback((UpdateProductDto dto, Product product) => {
+            _mockMapper.Setup(m => m.Map(It.IsAny<UpsertProductDto>(), It.IsAny<Product>()))
+                .Callback((UpsertProductDto dto, Product product) => {
                     product.Name = dto.Name;
                 });
         }
@@ -104,7 +103,7 @@ namespace SmartShopAPI.Tests
         [Fact]
         public async Task Create_Product_Successfully()
         {
-            var newProduct = new CreateProductDto { Name = "Spider-man 3", CategoryId = 1 };
+            var newProduct = new UpsertProductDto { Name = "Spider-man 3", CategoryId = 1 };
             var newProductId = await _service.CreateAsync(newProduct, null);
             var createdProduct = await _service.GetByIdAsync(newProductId);
             Assert.NotNull(createdProduct);
@@ -133,8 +132,8 @@ namespace SmartShopAPI.Tests
         [Fact]
         public async Task Update_Product_Successfully()
         {
-            var dto = new UpdateProductDto { Name = "Update product" };
-            await _service.UpdateAsync(1, dto);
+            var dto = new UpsertProductDto { Name = "Update product" };
+            await _service.UpdateAsync(1, dto, null);
             var updateProduct = await _mockContext.Object.Products.FirstOrDefaultAsync(p => p.Id == 1);
             Assert.Equal("Update product", updateProduct.Name);
             _mockContext.Verify(c => c.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.Once);
@@ -144,8 +143,8 @@ namespace SmartShopAPI.Tests
         public async Task Update_Product_NonExistingProduct_ThrowsNotFoundException()
         {
             var nonExistingProductId = 99;
-            var dto = new UpdateProductDto { Name = "Update Product" };
-            await Assert.ThrowsAsync<NotFoundException>(() => _service.UpdateAsync(nonExistingProductId, dto));
+            var dto = new UpsertProductDto { Name = "Update Product" };
+            await Assert.ThrowsAsync<NotFoundException>(() => _service.UpdateAsync(nonExistingProductId, dto, null));
             _mockContext.Verify(c => c.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.Never);
         }
 

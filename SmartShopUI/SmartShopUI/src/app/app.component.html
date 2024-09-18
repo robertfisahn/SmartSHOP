@@ -6,7 +6,8 @@
     </div>
     <div class="navbar-right">
       <ng-container *ngIf="accountService.isLoggedIn(); else loginLink">
-        <button class="cart-btn" routerLink="/cart"><i class="fas fa-shopping-cart"></i>
+        <button class="cart-btn" routerLink="/cart">
+          <i class="fas fa-shopping-cart"></i>
           <span *ngIf="cartItemCount > 0">
             <span class="cart-count">{{ cartItemCount }}</span>
           </span>
@@ -25,14 +26,40 @@
     </div>
   </nav>
 </header>
+<aside *ngIf="accountService.isAdmin()" class="admin-sidebar">
+  <ul>
+    <li>
+      <a (click)="toggleProductMenu()">Product</a>
+      <ul [class.show]="productMenuOpen">
+        <li><a routerLink="/product-create">Add Product</a></li>
+        <li><a (click)="openModal('update')">Update Product</a></li>
+        <li><a (click)="openModal('delete')">Delete Product</a></li>
+      </ul>
+    </li>
+  </ul>
+</aside>
+
+<div *ngIf="showModal" class="modal-overlay">
+  <div class="modal-content">
+    <h2 *ngIf="operation === 'update'">Enter Product ID to Update</h2>
+    <h2 *ngIf="operation === 'delete'">Enter Product ID to Delete</h2>
+
+    <input type="number" [(ngModel)]="productId" placeholder="Product ID" required>
+
+    <div class="modal-actions">
+      <button (click)="onConfirm()">OK</button>
+      <button (click)="closeModal()">Cancel</button>
+    </div>
+  </div>
+</div>
 
 <main>
   <router-outlet></router-outlet>
 </main>
 
 <footer class="footer">
-    <p>2024 powered by #Bullrun2024</p>
-    <img src="./assets/visa.png" alt="desc" class="header-gif" />
-    <img src="./assets/mastercard.png" alt="desc" class="header-gif" />
-    <img src="./assets/paypal.png" alt="desc" class="header-gif" />
+  <p>2024 powered by #1337</p>
+  <img src="./assets/visa.png" alt="desc" class="header-gif" />
+  <img src="./assets/mastercard.png" alt="desc" class="header-gif" />
+  <img src="./assets/paypal.png" alt="desc" class="header-gif" />
 </footer>

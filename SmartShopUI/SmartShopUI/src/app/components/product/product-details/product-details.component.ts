@@ -31,7 +31,6 @@ export class ProductDetailsComponent implements OnInit {
   }
 
   getImageUrl(imagePath: string): string {
-    return `${environment.apiUrl}/${imagePath}`;
+    return this.productService.getImageUrl(imagePath);
   }
-
 }

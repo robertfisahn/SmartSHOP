@@ -3,7 +3,8 @@ export interface ProductDto {
   name: string;
   description: string;
   price: number;
-  categoryName: string;
+  categoryId: number;
   stockQuantity: number;
   imagePath: string;
+  image?: File
 }

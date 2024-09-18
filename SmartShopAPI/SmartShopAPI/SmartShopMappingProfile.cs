@@ -15,11 +15,10 @@ namespace SmartShopAPI
             CreateMap<Category, CategoryDto>();
             CreateMap<CategoryUpsertDto, Category>();
             CreateMap<CategoryUpsertDto, Category>();
-            CreateMap<CreateProductDto, Product>();
-            CreateMap<Product, ProductDto>()
-                .ForMember(d => d.CategoryName, o => o.MapFrom(s => s.Category.Name));
+            CreateMap<UpsertProductDto, Product>()
+                .ForMember(dest => dest.ImagePath, opt => opt.Condition(src => src.ImagePath != null));
+            CreateMap<Product, ProductDto>();
             CreateMap<ProductDto, Product>();
-            CreateMap<UpdateProductDto, Product>();
             CreateMap<User, UserDto>()
                 .ForMember(r=>r.RoleName, d=>d.MapFrom(u=>u.Role.Name))
                 .ForMember(r => r.City, d=> d.MapFrom(u=> u.Address.City))
