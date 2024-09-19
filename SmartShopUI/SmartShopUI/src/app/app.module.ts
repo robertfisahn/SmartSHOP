@@ -1,6 +1,6 @@
 import { BrowserModule } from '@angular/platform-browser';
 import { NgModule } from '@angular/core';
-import { HttpClientModule } from '@angular/common/http';
+import { provideHttpClient, withInterceptorsFromDi } from '@angular/common/http';
 import { HashLocationStrategy, LocationStrategy } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { AppRoutingModule } from './app-routing.module';
@@ -21,32 +21,25 @@ import { ProductCreateComponent } from './components/product/product-create/prod
 import { ProductUpdateComponent } from './components/product/product-update/product-update.component';
 import { ProductDeleteComponent } from './components/product/product-delete/product-delete.component';
 
-@NgModule({
-  declarations: [
-    AppComponent,
-    HomeComponent,
-    ProductListComponent,
-    ProductDetailsComponent,
-    AccountRegisterComponent,
-    AccountLoginComponent,
-    AccountDetailsComponent,
-    CartComponent,
-    OrderCreateComponent,
-    OrderConfirmationComponent,
-    OrderDetailsComponent,
-    ProductCreateComponent,
-    ProductUpdateComponent,
-    ProductDeleteComponent
-  ],
-  imports: [
-    BrowserModule,
-    AppRoutingModule,
-    HttpClientModule,
-    FormsModule
-  ],
-  providers: [{ provide: LocationStrategy, useClass: HashLocationStrategy }],
-  bootstrap: [AppComponent]
-})
+@NgModule({ declarations: [
+        AppComponent,
+        HomeComponent,
+        ProductListComponent,
+        ProductDetailsComponent,
+        AccountRegisterComponent,
+        AccountLoginComponent,
+        AccountDetailsComponent,
+        CartComponent,
+        OrderCreateComponent,
+        OrderConfirmationComponent,
+        OrderDetailsComponent,
+        ProductCreateComponent,
+        ProductUpdateComponent,
+        ProductDeleteComponent
+    ],
+    bootstrap: [AppComponent], imports: [BrowserModule,
+        AppRoutingModule,
+        FormsModule], providers: [{ provide: LocationStrategy, useClass: HashLocationStrategy }, provideHttpClient(withInterceptorsFromDi())] })
 export class AppModule {
   constructor(public accountService: AccountService) { }
 }
