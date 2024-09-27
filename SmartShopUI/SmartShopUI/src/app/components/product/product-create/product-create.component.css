@@ -45,3 +45,13 @@
     .form-container button:hover {
       background-color: #005bb5;
     }
+
+    .form-container button:disabled {
+        background-color: grey;
+        cursor: default;
+    }
+
+.error {
+  color: red;
+  font-size: 14px;
+}

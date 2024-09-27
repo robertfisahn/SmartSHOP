@@ -56,7 +56,7 @@ namespace SmartShopAPI.Services
         public async Task<int> CreateAsync(UpsertProductDto dto, IFormFile? file)
         {
             await CheckCategory(dto.CategoryId);
-            await CheckUniqueName(dto.Name, null);
+            await CheckUniqueNameAsync(dto.Name, null);
 
             var product = _mapper.Map<Product>(dto);
             product.ImagePath = file != null ? await SaveImageAsync(file) : "images/products/default.jpg";
@@ -83,7 +83,7 @@ namespace SmartShopAPI.Services
             var product = await _context.Products
                 .FirstOrDefaultAsync(x => x.Id == productId) ?? throw new NotFoundException("Product not found");
             
-            await CheckUniqueName(dto.Name, productId);
+            await CheckUniqueNameAsync(dto.Name, productId);
             product.UpdatedDate = DateTime.Now;
             if (file != null)
             {
@@ -118,7 +118,7 @@ namespace SmartShopAPI.Services
             }
         }
 
-        public async Task CheckUniqueName(string productName, int? productId)
+        public async Task CheckUniqueNameAsync(string productName, int? productId)
         {
             bool productExists = await _context.Products
                 .AnyAsync(p => p.Name == productName && (productId == null || p.Id != productId));

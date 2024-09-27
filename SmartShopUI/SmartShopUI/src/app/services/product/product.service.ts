@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
-import { Observable } from 'rxjs';
+import { catchError, Observable, throwError } from 'rxjs';
 import { ProductDto } from '../../models/product.dto';
 import { environment } from 'src/environments/environment';
 import { AccountService } from '../account/account.service';
@@ -49,4 +49,17 @@ export class ProductService {
     return `${environment.apiUrl}/${imagePath}`;
   }
 
+  checkProductName(productName: string): Observable<boolean> {
+    const token = sessionStorage.getItem('token');
+    const headers = new HttpHeaders({
+      'Authorization': `Bearer ${token}`
+    });
+    const params = { productName };
+
+    return this.http.get<boolean>(`${this.apiUrl}/check`, { headers, params }).pipe(
+        catchError((error) => {
+          return throwError(() => new Error(error.error?.error || 'An error occurred while checking the product name.'));
+        })
+      );
+  }
 }

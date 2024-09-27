@@ -2,7 +2,7 @@ import { BrowserModule } from '@angular/platform-browser';
 import { NgModule } from '@angular/core';
 import { provideHttpClient, withInterceptorsFromDi } from '@angular/common/http';
 import { HashLocationStrategy, LocationStrategy } from '@angular/common';
-import { FormsModule } from '@angular/forms';
+import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { AppRoutingModule } from './app-routing.module';
 import { AccountService } from './services/account/account.service';
 
@@ -39,7 +39,9 @@ import { ProductDeleteComponent } from './components/product/product-delete/prod
     ],
     bootstrap: [AppComponent], imports: [BrowserModule,
         AppRoutingModule,
-        FormsModule], providers: [{ provide: LocationStrategy, useClass: HashLocationStrategy }, provideHttpClient(withInterceptorsFromDi())] })
+        FormsModule,
+        ReactiveFormsModule], providers: [{ provide: LocationStrategy, useClass: HashLocationStrategy }, provideHttpClient(withInterceptorsFromDi())]
+})
 export class AppModule {
   constructor(public accountService: AccountService) { }
 }

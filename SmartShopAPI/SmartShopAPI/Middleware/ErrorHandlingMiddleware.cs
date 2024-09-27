@@ -1,5 +1,6 @@
 ﻿using Newtonsoft.Json;
 using SmartShopAPI.Exceptions;
+using System.Net;
 
 namespace SmartShopAPI.Middleware
 {
@@ -13,27 +14,28 @@ namespace SmartShopAPI.Middleware
             }
             catch (NotFoundException notFoundException)
             {
-                context.Response.StatusCode = 404;
-                context.Response.ContentType = "application/json";
-                var result = JsonConvert.SerializeObject(new { error = notFoundException.Message });
-                await context.Response.WriteAsync(result);
-
+                await HandleExceptionAsync(context, HttpStatusCode.NotFound, notFoundException.Message);
             }
             catch (BadRequestException badRequestException)
             {
-                context.Response.StatusCode = 400;
-                context.Response.ContentType = "application/json";
-                var result = JsonConvert.SerializeObject(new { error = badRequestException.Message });
-                await context.Response.WriteAsync(result);
+                await HandleExceptionAsync(context, HttpStatusCode.BadRequest, badRequestException.Message);
             }
-            catch(ForbidException forbidException)
+            catch (ForbidException forbidException)
             {
-                context.Response.StatusCode = 403;
-                context.Response.ContentType= "application/json";
-                var result = JsonConvert.SerializeObject(new { error = forbidException.Message });
-                await context.Response.WriteAsync(result);
+                await HandleExceptionAsync(context, HttpStatusCode.Forbidden, forbidException.Message);
+            }
+            catch (Exception ex)
+            {
+                await HandleExceptionAsync(context, HttpStatusCode.InternalServerError, "Something went wrong.");
             }
         }
 
+        private static Task HandleExceptionAsync(HttpContext context, HttpStatusCode statusCode, string message)
+        {
+            context.Response.StatusCode = (int)statusCode;
+            context.Response.ContentType = "application/json";
+            var result = JsonConvert.SerializeObject(new { error = message });
+            return context.Response.WriteAsync(result);
+        }
     }
 }

@@ -13,5 +13,6 @@ namespace SmartShopAPI.Interfaces
         Task<PagedResult<ProductDto>> GetAsync(int categoryId, QueryParams query);
         Task<ProductDto> GetByIdAsync(int productId);
         Task UpdateAsync(int productId, UpsertProductDto dto, IFormFile? file);
+        Task CheckUniqueNameAsync(string productName, int? productId);
     }
 }

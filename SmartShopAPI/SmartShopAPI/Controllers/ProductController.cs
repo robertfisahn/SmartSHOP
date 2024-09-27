@@ -1,7 +1,6 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using SmartShopAPI.Interfaces;
-using SmartShopAPI.Models;
 using SmartShopAPI.Models.Dtos;
 using SmartShopAPI.Models.Dtos.Product;
 
@@ -38,6 +37,15 @@ namespace SmartShopAPI.Controllers
         {
             var products = await _productService.GetProductsAsync(searchPhrase);
             return Ok(products);
+        }
+
+        [HttpGet("product/check")]
+        [ProducesResponseType(200)]
+        [ProducesResponseType(400)]
+        public async Task<ActionResult> CheckName([FromQuery]string productName)
+        {
+            await _productService.CheckUniqueNameAsync(productName, null);
+            return Ok(new { message = "Product name is available." });
         }
 
         [HttpGet("category/{categoryId}/product")]
