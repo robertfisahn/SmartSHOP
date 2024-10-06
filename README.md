@@ -22,6 +22,10 @@ Both applications can be run in two ways:
     ```bash
     npm install -g @angular/cli@18.2.5
     ```
+- **SQL Server Express** – download and install from [here](https://www.microsoft.com/en-us/sql-server/sql-server-downloads) (choose the Express version)
+
+> ⚠️ **IMPORTANT:**  
+> By default, the application is configured to use SQL Server Express. If you are using a different version of SQL Server or a custom setup, you will need to update the connection string in the `appsettings.json` file.
 
 ---
 
